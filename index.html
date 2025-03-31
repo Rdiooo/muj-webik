@@ -65,15 +65,26 @@ const getWeekends = () => {
 
 let App = function VoteWeekends() {
   const [name, setName] = useState("");
-  const [weekends, setWeekends] = useState(getWeekends());
+  const [weekends, setWeekends] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Fetch existing votes from Firestore
   useEffect(() => {
     const fetchVotes = async () => {
-      const weekendsRef = collection(db, "weekends");
-      const snapshot = await getDocs(weekendsRef);
-      const weekendsData = snapshot.docs.map(doc => doc.data());
-      setWeekends(weekendsData);
+      try {
+        const weekendsRef = collection(db, "weekends");
+        const snapshot = await getDocs(weekendsRef);
+        if (!snapshot.empty) {
+          const weekendsData = snapshot.docs.map(doc => doc.data());
+          setWeekends(weekendsData);
+        } else {
+          setWeekends(getWeekends()); // if no data, use default weekends
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching weekends: ", error);
+        setLoading(false);
+      }
     };
 
     fetchVotes();
@@ -97,6 +108,10 @@ let App = function VoteWeekends() {
       votes: updatedWeekends.find(weekend => weekend.id === id).votes
     }, { merge: true });
   };
+
+  if (loading) {
+    return <div>Načítání dat...</div>;
+  }
 
   return (
     <div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
