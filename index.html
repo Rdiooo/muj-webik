@@ -1,150 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rezervace víkendů</title>
+    <script type="module">
+        // Import Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+        // Firebase konfigurace
+        const firebaseConfig = {
+            apiKey: "AIzaSyANu2hUSkoFgD9f1p6Vqxon9Yhd-dpRcys",
+            authDomain: "webik-77081.firebaseapp.com",
+            projectId: "webik-77081",
+            storageBucket: "webik-77081.appspot.com",
+            messagingSenderId: "199199665865",
+            appId: "1:199199665865:web:b3b34d1877ea27f7f9e718",
+            measurementId: "G-VC7L34JMFT"
+        };
+
+        // Inicializace Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Funkce pro rezervaci
+        async function rezervovat() {
+            let jmeno = document.getElementById("jmeno").value;
+            if (jmeno === "") return alert("Zadej své jméno!");
+
+            try {
+                await addDoc(collection(db, "rezervace"), {
+                    jmeno: jmeno,
+                    cas: new Date()
+                });
+                zobrazRezervace(); // Aktualizace seznamu
+            } catch (e) {
+                console.error("Chyba při ukládání rezervace: ", e);
+            }
+        }
+
+        // Funkce pro zobrazení rezervací
+        async function zobrazRezervace() {
+            const seznam = document.getElementById("seznam");
+            seznam.innerHTML = "Načítání...";
+
+            try {
+                const dotaz = await getDocs(collection(db, "rezervace"));
+                seznam.innerHTML = "";
+                dotaz.forEach((doc) => {
+                    let li = document.createElement("li");
+                    li.textContent = doc.data().jmeno;
+                    seznam.appendChild(li);
+                });
+            } catch (e) {
+                console.error("Chyba při načítání rezervací: ", e);
+            }
+        }
+
+        // Automatické načtení rezervací při spuštění stránky
+        window.onload = zobrazRezervace;
+    </script>
+</head>
 <body>
-  <div id="root"></div>
+    <h1>Rezervace víkendu</h1>
+    <input type="text" id="jmeno" placeholder="Tvé jméno">
+    <button onclick="rezervovat()">Rezervovat víkend</button>
+
+    <h2>Seznam rezervací:</h2>
+    <ul id="seznam"></ul>
 </body>
-<!-- This setup is not suitable for production. -->
-<!-- Only use it in development! -->
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script async src="https://ga.jspm.io/npm:es-module-shims@1.7.0/dist/es-module-shims.js"></script>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react?dev",
-    "react-dom/client": "https://esm.sh/react-dom/client?dev"
-  }
-}
-</script>
-<script type="text/babel" data-type="module">
-import React, { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-
-import { useState } from "react";
-
-const getWeekends = () => {
-  let weekends = [];
-  let start = new Date("2024-05-01");
-  let end = new Date("2024-09-30");
-
-  while (start <= end) {
-    if (start.getDay() === 5) {
-      let saturday = new Date(start);
-      saturday.setDate(saturday.getDate() + 1);
-      let sunday = new Date(start);
-      sunday.setDate(sunday.getDate() + 2);
-      weekends.push({
-        id: `${start.toISOString().slice(0, 10)}`,
-        label: `${start.toLocaleDateString()} - ${sunday.toLocaleDateString()}`,
-        votes: [],
-      });
-    }
-    start.setDate(start.getDate() + 1);
-  }
-
-  return weekends;
-};
-
-let App = function VoteWeekends() {
-  const [name, setName] = useState("");
-  const [weekends, setWeekends] = useState(getWeekends());
-
-  const handleVote = (id) => {
-    if (!name) return alert("Vyplňte své jméno před hlasováním!");
-    setWeekends((prev) =>
-      prev.map((weekend) =>
-        weekend.id === id && !weekend.votes.includes(name)
-          ? { ...weekend, votes: [...weekend.votes, name] }
-          : weekend
-      )
-    );
-  };
-
-  return (
-    <div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
-      <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>Hlasování o víkendech</h1>
-      <input
-        style={{ width: "100%", padding: "10px", margin: "10px 0", border: "1px solid #ccc", borderRadius: "5px" }}
-        placeholder="Zadejte své jméno"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <div>
-        {weekends.map((weekend) => (
-          <div key={weekend.id} style={{ border: "1px solid #ddd", padding: "10px", borderRadius: "5px", marginBottom: "10px" }}>
-            <p style={{ fontWeight: "bold" }}>{weekend.label}</p>
-            <p style={{ fontSize: "14px", color: "gray" }}>
-              Hlasovali: {weekend.votes.join(", ") || "Nikdo zatím nehlasoval"}
-            </p>
-            <button 
-              style={{ padding: "10px", backgroundColor: "blue", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
-              onClick={() => handleVote(weekend.id)}
-            >
-              Hlasovat
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-
-const root = createRoot(document.getElementById('root'));
-root.render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
-</script>
-<style>
-* {
-  box-sizing: border-box;
-}
-
-body {
-  font-family: sans-serif;
-  margin: 20px;
-  padding: 0;
-}
-
-h1 {
-  margin-top: 0;
-  font-size: 22px;
-}
-
-h2 {
-  margin-top: 0;
-  font-size: 20px;
-}
-
-h3 {
-  margin-top: 0;
-  font-size: 18px;
-}
-
-h4 {
-  margin-top: 0;
-  font-size: 16px;
-}
-
-h5 {
-  margin-top: 0;
-  font-size: 14px;
-}
-
-h6 {
-  margin-top: 0;
-  font-size: 12px;
-}
-
-code {
-  font-size: 1.2em;
-}
-
-ul {
-  padding-inline-start: 20px;
-}
-
-
-</style>
 </html>
