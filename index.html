@@ -1,19 +1,4 @@
 import { useState } from "react";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyANu2hUSkoFgD9f1p6Vqxon9Yhd-dpRcys",
-  authDomain: "webik-77081.firebaseapp.com",
-  projectId: "webik-77081",
-  storageBucket: "webik-77081.firebaseapp.com",
-  messagingSenderId: "199199665865",
-  appId: "1:199199665865:web:b3b34d1877ea27f7f9e718",
-  measurementId: "G-VC7L34JMFT"
-};
-
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
 const getWeekends = () => {
   let weekends = [];
@@ -44,7 +29,6 @@ export default function VoteWeekends() {
 
   const handleVote = (id) => {
     if (!name) return alert("Vyplňte své jméno před hlasováním!");
-
     setWeekends((prev) =>
       prev.map((weekend) =>
         weekend.id === id && !weekend.votes.includes(name)
@@ -65,21 +49,17 @@ export default function VoteWeekends() {
       />
       <div>
         {weekends.map((weekend) => (
-          <div
-            key={weekend.id}
-            style={{
-              border: "1px solid #ddd",
-              padding: "10px",
-              borderRadius: "5px",
-              marginBottom: "10px",
-              cursor: "pointer",
-            }}
-            onClick={() => handleVote(weekend.id)} // Kliknutí na víkend rovnou přidá hlas
-          >
+          <div key={weekend.id} style={{ border: "1px solid #ddd", padding: "10px", borderRadius: "5px", marginBottom: "10px" }}>
             <p style={{ fontWeight: "bold" }}>{weekend.label}</p>
             <p style={{ fontSize: "14px", color: "gray" }}>
               Hlasovali: {weekend.votes.join(", ") || "Nikdo zatím nehlasoval"}
             </p>
+            <button 
+              style={{ padding: "10px", backgroundColor: "blue", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
+              onClick={() => handleVote(weekend.id)}
+            >
+              Hlasovat
+            </button>
           </div>
         ))}
       </div>
