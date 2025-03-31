@@ -3,8 +3,7 @@
 <body>
   <div id="root"></div>
 </body>
-<!-- This setup is not suitable for production. -->
-<!-- Only use it in development! -->
+
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script async src="https://ga.jspm.io/npm:es-module-shims@1.7.0/dist/es-module-shims.js"></script>
 <script type="importmap">
@@ -21,14 +20,11 @@
 import React, { StrictMode, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 
-// Import Firebase libraries
+// Firebase imports
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getFirestore, collection, getDocs, doc, setDoc } from "firebase/firestore";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyANu2hUSkoFgD9f1p6Vqxon9Yhd-dpRcys",
   authDomain: "webik-77081.firebaseapp.com",
@@ -41,8 +37,8 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-  
+const db = getFirestore(app);
+
 const getWeekends = () => {
   let weekends = [];
   let start = new Date("2024-05-01");
@@ -162,6 +158,7 @@ root.render(
   </StrictMode>
 );
 </script>
+
 <style>
 * {
   box-sizing: border-box;
