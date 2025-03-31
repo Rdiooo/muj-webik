@@ -11,15 +11,34 @@
 {
   "imports": {
     "react": "https://esm.sh/react?dev",
-    "react-dom/client": "https://esm.sh/react-dom/client?dev"
+    "react-dom/client": "https://esm.sh/react-dom/client?dev",
+    "firebase/app": "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js"
   }
 }
 </script>
 <script type="text/babel" data-type="module">
-import React, { StrictMode } from 'react';
+import React, { StrictMode, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import { useState } from "react";
+// Import Firebase libraries
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, setDoc, getDocs, collection } from 'firebase/firestore';
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyANu2hUSkoFgD9f1p6Vqxon9Yhd-dpRcys",
+  authDomain: "webik-77081.firebaseapp.com",
+  projectId: "webik-77081",
+  storageBucket: "webik-77081.appspot.com",
+  messagingSenderId: "199199665865",
+  appId: "1:199199665865:web:b3b34d1877ea27f7f9e718",
+  measurementId: "G-VC7L34JMFT"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const getWeekends = () => {
   let weekends = [];
@@ -48,15 +67,35 @@ let App = function VoteWeekends() {
   const [name, setName] = useState("");
   const [weekends, setWeekends] = useState(getWeekends());
 
-  const handleVote = (id) => {
+  // Fetch existing votes from Firestore
+  useEffect(() => {
+    const fetchVotes = async () => {
+      const weekendsRef = collection(db, "weekends");
+      const snapshot = await getDocs(weekendsRef);
+      const weekendsData = snapshot.docs.map(doc => doc.data());
+      setWeekends(weekendsData);
+    };
+
+    fetchVotes();
+  }, []);
+
+  const handleVote = async (id) => {
     if (!name) return alert("Vyplňte své jméno před hlasováním!");
-    setWeekends((prev) =>
-      prev.map((weekend) =>
-        weekend.id === id && !weekend.votes.includes(name)
-          ? { ...weekend, votes: [...weekend.votes, name] }
-          : weekend
-      )
-    );
+
+    const updatedWeekends = weekends.map((weekend) => {
+      if (weekend.id === id && !weekend.votes.includes(name)) {
+        return { ...weekend, votes: [...weekend.votes, name] };
+      }
+      return weekend;
+    });
+
+    setWeekends(updatedWeekends);
+
+    // Save the updated votes to Firestore
+    const weekendRef = doc(db, "weekends", id);
+    await setDoc(weekendRef, {
+      votes: updatedWeekends.find(weekend => weekend.id === id).votes
+    }, { merge: true });
   };
 
   return (
@@ -75,19 +114,18 @@ let App = function VoteWeekends() {
             <p style={{ fontSize: "14px", color: "gray" }}>
               Hlasovali: {weekend.votes.join(", ") || "Nikdo zatím nehlasoval"}
             </p>
-            <button 
-              style={{ padding: "10px", backgroundColor: "blue", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
+            <div 
+              style={{ padding: "10px", backgroundColor: "lightblue", cursor: "pointer" }}
               onClick={() => handleVote(weekend.id)}
             >
-              Hlasovat
-            </button>
+              Klikněte pro hlasování
+            </div>
           </div>
         ))}
       </div>
     </div>
   );
-}
-
+};
 
 const root = createRoot(document.getElementById('root'));
 root.render(
@@ -144,7 +182,5 @@ code {
 ul {
   padding-inline-start: 20px;
 }
-
-
 </style>
 </html>
