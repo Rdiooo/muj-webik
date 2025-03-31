@@ -44,6 +44,7 @@ export default function VoteWeekends() {
 
   const handleVote = (id) => {
     if (!name) return alert("Vyplňte své jméno před hlasováním!");
+
     setWeekends((prev) =>
       prev.map((weekend) =>
         weekend.id === id && !weekend.votes.includes(name)
@@ -64,17 +65,21 @@ export default function VoteWeekends() {
       />
       <div>
         {weekends.map((weekend) => (
-          <div key={weekend.id} style={{ border: "1px solid #ddd", padding: "10px", borderRadius: "5px", marginBottom: "10px" }}>
+          <div
+            key={weekend.id}
+            style={{
+              border: "1px solid #ddd",
+              padding: "10px",
+              borderRadius: "5px",
+              marginBottom: "10px",
+              cursor: "pointer",
+            }}
+            onClick={() => handleVote(weekend.id)} // Kliknutí na víkend rovnou přidá hlas
+          >
             <p style={{ fontWeight: "bold" }}>{weekend.label}</p>
             <p style={{ fontSize: "14px", color: "gray" }}>
               Hlasovali: {weekend.votes.join(", ") || "Nikdo zatím nehlasoval"}
             </p>
-            <button 
-              style={{ padding: "10px", backgroundColor: "blue", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
-              onClick={() => handleVote(weekend.id)}
-            >
-              Hlasovat
-            </button>
           </div>
         ))}
       </div>
