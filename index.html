@@ -100,6 +100,7 @@ let App = function VoteWeekends() {
   const handleVote = async (id) => {
     if (!name) return alert("Vyplňte své jméno před hlasováním!");
 
+    // Find the weekend being voted for and update the votes
     const updatedWeekends = weekends.map((weekend) => {
       if (weekend.id === id && !weekend.votes.includes(name)) {
         return { ...weekend, votes: [...weekend.votes, name] };
@@ -111,6 +112,8 @@ let App = function VoteWeekends() {
 
     // Save the updated votes to Firestore
     const weekendRef = doc(db, "weekends", id);
+
+    // Merge votes instead of overwriting (important for preserving other data)
     await setDoc(weekendRef, {
       votes: updatedWeekends.find(weekend => weekend.id === id).votes
     }, { merge: true });
